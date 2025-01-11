@@ -10,19 +10,15 @@ function parseCSVData(text) {
       const point = {
         x: parseFloat(cols[0]),
         y: parseFloat(cols[1]),
-        z: parseFloat(cols[2])
+        z: parseFloat(cols[2]),
+        size: cols.length >= 4 ? parseFloat(cols[3]) : undefined,
+        color: (() => {
+          const colorCode = cols[4]?.trim();
+          if (/^0x[0-9A-Fa-f]{6}$/i.test(colorCode)) return parseInt(colorCode, 16);
+          if (/^#[0-9A-Fa-f]{6}$/i.test(colorCode)) return parseInt(colorCode.slice(1), 16);
+          return 0xffff00; // デフォルトカラー
+        })()
       };
-      if (cols.length >= 4) {
-        point.size = parseFloat(cols[3]);
-      }
-      if (cols.length >= 5) {
-        const colorCode = cols[4].trim();
-        point.color = /^0x[0-9A-Fa-f]{6}$/i.test(colorCode)
-          ? parseInt(colorCode, 16)
-          : 0xffff00;
-      } else {
-        point.color = 0xffff00;
-      }
       return point;
     }
     return null;
@@ -30,6 +26,7 @@ function parseCSVData(text) {
 
   return data;
 }
+
 
 async function loadCSVData(url) {
   const response = await fetch(url);

@@ -1,30 +1,30 @@
 // テキスト形式のCSVデータをオブジェクト形式に変換する関数
 function parseCSV(text) {
-  const rows = text.split('\n'); // 行ごとに分割
-  const data = [];
+  const rows = text.split("\n").slice(1); // ヘッダー除去
 
-  // ヘッダー行を除く（最初の行をスキップ）
-  rows.slice(1).forEach(row => {
-    const cols = row.split(',');
-
-    // 少なくとも3列あり、数値が含まれている場合に処理
+  const data = rows.map((row) => {
+    const cols = row.split(",");
     if (cols.length >= 3) {
-      const x = parseFloat(cols[0].trim());
-      const y = parseFloat(cols[1].trim());
-      const z = parseFloat(cols[2].trim());
-      const size = cols.length >= 4 ? parseFloat(cols[3].trim()) : undefined;
-      const colorCode = cols.length >= 5 ? cols[4].trim() : undefined;
-      const color = colorCode && /^0x[0-9A-Fa-f]{6}$/i.test(colorCode) ? parseInt(colorCode, 16) : 0xffff00;
-
-      // x, y, z のいずれかが無効な値であればスキップ
-      if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
-        data.push({ x, y, z, size, color });
-      }
+      const point = {
+        x: parseFloat(cols[0]),
+        y: parseFloat(cols[1]),
+        z: parseFloat(cols[2]),
+        size: cols.length >= 4 ? parseFloat(cols[3]) : undefined,
+        color: (() => {
+          const colorCode = cols[4]?.trim();
+          if (/^0x[0-9A-Fa-f]{6}$/i.test(colorCode)) return parseInt(colorCode, 16);
+          if (/^#[0-9A-Fa-f]{6}$/i.test(colorCode)) return parseInt(colorCode.slice(1), 16);
+          return 0xffff00; // デフォルトカラー
+        })()
+      };
+      return point;
     }
-  });
+    return null;
+  }).filter(Boolean);
 
   return data;
 }
+
 
 async function loadCSVData(url) {
   const response = await fetch(url);
