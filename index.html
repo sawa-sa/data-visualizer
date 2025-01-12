@@ -117,8 +117,8 @@
 
       <div style="margin-top: 10px;">
         <input type="checkbox" id="flag" />
-        <label for="flag">正規化して0-1の値として扱う</label>
-        <p id="flagStatus">1をデフォルトとし、0より大きい任意の値を指定できます。</p>
+        <label for="flag">4変数目を正規化して0-1の値として扱う</label>
+        <p id="flagStatus">4変数目は1をデフォルトとし、0より大きい任意の値を指定できます。</p>
       </div>
     </fieldset>
 
@@ -182,9 +182,9 @@
       // チェックボックス変更
       flagCheck.addEventListener('change', () => {
         if (flagCheck.checked) {
-          flagStatus.textContent = "正規化が有効です (0〜1の範囲にスケーリングします)。";
+          flagStatus.textContent = "4変数目の正規化が有効です (0〜1の範囲にスケーリングします)。";
         } else {
-          flagStatus.textContent = "正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
+          flagStatus.textContent = "4変数目を正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
         }
       });
 
@@ -279,9 +279,9 @@
       // ページ読み込み時の初期メッセージ
       (function initMessage() {
         if (flagCheck.checked) {
-          flagStatus.textContent = "正規化が有効です (0〜1の範囲にスケーリングします)。";
+          flagStatus.textContent = "4変数目の正規化が有効です (0〜1の範囲にスケーリングします)。";
         } else {
-          flagStatus.textContent = "正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
+          flagStatus.textContent = "4変数目を正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
         }
       })();
     </script>
