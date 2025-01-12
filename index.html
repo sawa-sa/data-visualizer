@@ -202,9 +202,9 @@
             }
           });
 
-          sessionStorage.setItem('chosenDataset', selectedDataset);
-          sessionStorage.setItem('flag', '1');
-          sessionStorage.removeItem('uploadedCSVData'); 
+          localStorage.setItem('chosenDataset', selectedDataset);
+          localStorage.setItem('flag', '1');
+          localStorage.removeItem('uploadedCSVData'); 
           handleDatasetFlags(selectedDataset);
           window.location.href = targetUrl;
 
@@ -214,12 +214,12 @@
             alert("CSVファイルを選択してください。");
             return;
           }
-          sessionStorage.setItem('flag', flagCheck.checked ? '1' : '0');
+          localStorage.setItem('flag', flagCheck.checked ? '1' : '0');
 
           try {
             const csvText = await readCsvFile(file);
-            sessionStorage.setItem('uploadedCSVData', csvText);
-            sessionStorage.setItem('chosenDataset', 'custom');
+            localStorage.setItem('uploadedCSVData', csvText);
+            localStorage.setItem('chosenDataset', 'custom');
             window.location.href = targetUrl;
           } catch (error) {
             alert("ファイル読み込みに失敗しました。");
@@ -240,7 +240,7 @@
           flagValue = '2';
         }
 
-        sessionStorage.setItem('flag2', flagValue);
+        localStorage.setItem('flag2', flagValue);
       }
 
 

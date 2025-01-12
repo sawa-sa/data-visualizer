@@ -38,7 +38,7 @@
 
       let arToolkitSource, arToolkitContext;
 
-      const chosenDataset = sessionStorage.getItem('chosenDataset');
+      const chosenDataset = localStorage.getItem('chosenDataset');
       let csvText;
 
       if (chosenDataset === 'dataset1') {
@@ -52,7 +52,7 @@
       } else if (chosenDataset === 'dataset5') {
         csvText = await loadCSVData("data/dataset5.csv");
       } else {
-        csvText = sessionStorage.getItem('uploadedCSVData');
+        csvText = localStorage.getItem('uploadedCSVData');
         if (!csvText) {
           alert('CSVデータが見つかりません。ファイルをアップロードしてもう一度試してください。');
           window.location.href = 'index.html';
@@ -145,7 +145,7 @@
 
         normalizedData.forEach(point => {
 
-          const flag = sessionStorage.getItem('flag'); // フラグの値を取得
+          const flag = localStorage.getItem('flag'); // フラグの値を取得
           let size;
           if (flag === '1') { // 正規化する
             size = point.size !== undefined ? 0.02 + (point.size - 0.5) * 0.02 : 0.02;
@@ -185,7 +185,7 @@
     <script>
       (function() {
         // flag2 を取得
-        const flag2 = sessionStorage.getItem('flag2');
+        const flag2 = localStorage.getItem('flag2');
 
         // flag2 が無い・または 1・2 以外の場合は何もせず return
         if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
