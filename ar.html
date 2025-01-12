@@ -1,21 +1,31 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Marker Based AR with AR.js and Three.js</title>
-    <!-- Three.js & AR.js 読み込み -->
+    <meta charset="utf-8" />
+    <title>Marker Based AR (軽量化版)</title>
+
+    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.js"></script>
+    <!-- AR.js -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/3.1.0/three.js/build/ar.js"></script>
-    <!-- CSV Manager -->
+    <!-- CSV Manager (別ファイルで用意) -->
     <script src="./CSVManager2.js" type="module"></script>
   </head>
 
   <body>
-    <!-- メインスクリプト：トップレベルawaitを使わず、main()関数内で await する -->
     <script type="module">
-      import { loadCSVData, parseCSV, normalizeData, calculateMinMax } from './CSVManager2.js';
+      import {
+        loadCSVData,
+        parseCSV,
+        normalizeData,
+        calculateMinMax
+      } from "./CSVManager2.js";
 
+      // =====================
+      // メイン関数 (非同期)
+      // =====================
       async function main() {
-        // レンダラー設定
+        // ★ 1) Three.js Renderer 設定
         const renderer = new THREE.WebGLRenderer({
           antialias: true,
           alpha: true
@@ -26,12 +36,12 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // シーンとカメラの作成
+        // シーンとカメラ
         const scene = new THREE.Scene();
         const camera = new THREE.Camera();
         scene.add(camera);
 
-        // 環境光と指向性ライト
+        // 環境光 & 指向性ライト
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
 
@@ -42,43 +52,44 @@
 
         let arToolkitSource, arToolkitContext;
 
-        // localStorage から必要な情報を取得
-        const chosenDataset = localStorage.getItem('chosenDataset');
+        // ★ 2) localStorage から データセット or CSVアップロード内容 を取得
+        const chosenDataset = localStorage.getItem("chosenDataset");
         let csvText;
 
-        // ▼ トップレベル await を避け、関数内で await
-        if (chosenDataset === 'dataset1') {
+        if (chosenDataset === "dataset1") {
           csvText = await loadCSVData("data/dataset1.csv");
-        } else if (chosenDataset === 'dataset2') {
+        } else if (chosenDataset === "dataset2") {
           csvText = await loadCSVData("data/dataset2.csv");
-        } else if (chosenDataset === 'dataset3') {
+        } else if (chosenDataset === "dataset3") {
           csvText = await loadCSVData("data/dataset3.csv");
-        } else if (chosenDataset === 'dataset4') {
+        } else if (chosenDataset === "dataset4") {
           csvText = await loadCSVData("data/dataset4.csv");
-        } else if (chosenDataset === 'dataset5') {
+        } else if (chosenDataset === "dataset5") {
           csvText = await loadCSVData("data/dataset5.csv");
         } else {
-          csvText = localStorage.getItem('uploadedCSVData');
+          // カスタムアップロードCSV
+          csvText = localStorage.getItem("uploadedCSVData");
           if (!csvText) {
-            alert('CSVデータが見つかりません。ファイルをアップロードしてもう一度試してください。');
-            window.location.href = 'index.html';
-            return; // 処理中断
+            alert("CSVデータが見つかりません。ファイルをアップロードしてください。");
+            window.location.href = "index.html";
+            return;
           }
         }
 
+        // ★ 3) AR.jsの初期化
         setupAR();
 
         // CSV パース
         if (!csvText) return;
         const parsedData = parseCSV(csvText);
 
-        // 軸＋ラベルの追加
+        // 軸 & ラベル
         await addAxesWithLabels(parsedData);
 
-        // 散布図の作成
+        // 散布図 (SphereGeometryを軽量化)
         await createScatterPlot(parsedData);
 
-        // アニメーションループ開始
+        // レンダーループ
         function animate() {
           if (arToolkitSource.ready) {
             arToolkitContext.update(arToolkitSource.domElement);
@@ -89,23 +100,21 @@
         }
         animate();
 
-        // ---------------------------
-        // 以下、元の関数をそのまま定義
-        // ---------------------------
+        // ================
+        // 関数定義群
+        // ================
         function setupAR() {
-          arToolkitSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
+          arToolkitSource = new THREEx.ArToolkitSource({ sourceType: "webcam" });
           arToolkitSource.init(() => {
-            // iOSでカメラ開始に時間がかかるケースがあるので遅延
+            // iOSで遅延が必要な場合がある
             setTimeout(() => onResize(), 2000);
           });
 
-          addEventListener('resize', () => {
-            onResize();
-          });
+          window.addEventListener("resize", onResize);
 
           arToolkitContext = new THREEx.ArToolkitContext({
-            cameraParametersUrl: 'data/camera_para.dat',
-            detectionMode: 'mono'
+            cameraParametersUrl: "data/camera_para.dat",
+            detectionMode: "mono"
           });
 
           arToolkitContext.init(() => {
@@ -113,9 +122,9 @@
           });
 
           new THREEx.ArMarkerControls(arToolkitContext, camera, {
-            type: 'pattern',
-            patternUrl: 'data/patt.hiro',
-            changeMatrixMode: 'cameraTransformMatrix'
+            type: "pattern",
+            patternUrl: "data/patt.hiro",
+            changeMatrixMode: "cameraTransformMatrix"
           });
         }
 
@@ -137,13 +146,38 @@
           });
 
           const axes = [
-            { start: [-0.5, 0, -0.5], end: [0.5, 0, -0.5], label: 'X', minLabel: min.x, maxLabel: max.x, offset: [0.1, 0, 0] },
-            { start: [-0.5, 0, -0.5], end: [-0.5, 1, -0.5], label: 'Y', minLabel: min.y, maxLabel: max.y, offset: [0, 0.1, 0] },
-            { start: [-0.5, 0, -0.5], end: [-0.5, 0, 0.5], label: 'Z', minLabel: min.z, maxLabel: max.z, offset: [0, 0, 0.1] }
+            // X軸
+            {
+              start: [-0.5, 0, -0.5],
+              end: [0.5, 0, -0.5],
+              label: "X",
+              minLabel: min.x,
+              maxLabel: max.x,
+              offset: [0.1, 0, 0]
+            },
+            // Y軸
+            {
+              start: [-0.5, 0, -0.5],
+              end: [-0.5, 1, -0.5],
+              label: "Y",
+              minLabel: min.y,
+              maxLabel: max.y,
+              offset: [0, 0.1, 0]
+            },
+            // Z軸
+            {
+              start: [-0.5, 0, -0.5],
+              end: [-0.5, 0, 0.5],
+              label: "Z",
+              minLabel: min.z,
+              maxLabel: max.z,
+              offset: [0, 0, 0.1]
+            }
           ];
 
           const loader = new THREE.FontLoader();
-          loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', font => {
+          // ★ 4) 同一オリジンでホストしたフォントを読み込む
+          loader.load("./fonts/helvetiker_regular.typeface.json", font => {
             axes.forEach(({ start, end, label, minLabel, maxLabel, offset }) => {
               // 軸
               const geometry = new THREE.BufferGeometry().setFromPoints([
@@ -153,7 +187,7 @@
               const axis = new THREE.Line(geometry, axisMaterial);
               scene.add(axis);
 
-              // ラベル用のマテリアル
+              // ラベル用マテリアル
               const textMaterial = new THREE.MeshBasicMaterial({
                 color: 0xff0000,
                 transparent: true,
@@ -161,56 +195,49 @@
               });
 
               // 軸ラベル
-              const labelGeometry = new THREE.TextGeometry(label, {
-                font,
-                size: 0.05,
-                height: 0.01
-              });
-              const labelMesh = new THREE.Mesh(labelGeometry, textMaterial);
-              labelMesh.position.set(end[0] + offset[0], end[1] + offset[1], end[2] + offset[2]);
-              scene.add(labelMesh);
-
+              addText(scene, font, textMaterial, label, end[0] + offset[0], end[1] + offset[1], end[2] + offset[2]);
               // 最小値ラベル
-              const minLabelGeometry = new THREE.TextGeometry(minLabel.toFixed(2), {
-                font,
-                size: 0.05,
-                height: 0.01
-              });
-              const minLabelMesh = new THREE.Mesh(minLabelGeometry, textMaterial);
-              minLabelMesh.position.set(start[0] + offset[0], start[1] + offset[1], start[2] + offset[2]);
-              scene.add(minLabelMesh);
-
-              // 最大値ラベル
-              const maxLabelGeometry = new THREE.TextGeometry(maxLabel.toFixed(2), {
-                font,
-                size: 0.05,
-                height: 0.01
-              });
-              const maxLabelMesh = new THREE.Mesh(maxLabelGeometry, textMaterial);
-              maxLabelMesh.position.set(
-                end[0] + offset[0] * 2,
-                end[1] + offset[1] * 2,
-                end[2] + offset[2] * 2
+              addText(scene, font, textMaterial, minLabel.toFixed(2),
+                start[0] - offset[0], start[1] - offset[1], start[2] - offset[2]
               );
-              scene.add(maxLabelMesh);
+              // 最大値ラベル
+              addText(scene, font, textMaterial, maxLabel.toFixed(2),
+                end[0] + offset[0] * 2, end[1] + offset[1] * 2, end[2] + offset[2] * 2
+              );
             });
           });
+        }
+
+        function addText(scene, font, material, text, x, y, z) {
+          const textGeom = new THREE.TextGeometry(text, {
+            font: font,
+            size: 0.05,
+            height: 0.01
+          });
+          const textMesh = new THREE.Mesh(textGeom, material);
+          textMesh.position.set(x, y, z);
+          scene.add(textMesh);
         }
 
         async function createScatterPlot(parsedData) {
           const normalizedData = normalizeData(parsedData);
 
           normalizedData.forEach(point => {
-            const flag = localStorage.getItem('flag'); // フラグの値を取得
+            const flag = localStorage.getItem("flag") || "1"; // フラグ値
             let size;
-
-            // 正規化フラグが '1' なら特殊計算、それ以外なら列をそのままサイズ化
-            if (flag === '1') {
-              size = point.size !== undefined ? 0.02 + (point.size - 0.5) * 0.02 : 0.02;
+            if (flag === "1") {
+              // 正規化後サイズ
+              size = point.size !== undefined
+                ? 0.02 + (point.size - 0.5) * 0.02
+                : 0.02;
             } else {
-              size = point.size !== undefined ? 0.02 * point.size : 0.02;
+              // 第4列をそのままスケールに
+              size = point.size !== undefined
+                ? 0.02 * point.size
+                : 0.02;
             }
 
+            // ★ 5) 球のセグメント数を減らして負荷を軽減
             const geometry = new THREE.SphereGeometry(size, 16, 16);
             const material = new THREE.MeshStandardMaterial({
               color: point.color,
@@ -219,32 +246,46 @@
             });
             const sphere = new THREE.Mesh(geometry, material);
 
-            // -0.5 オフセットして中央に集約
             sphere.position.set(point.x - 0.5, point.y, point.z - 0.5);
             scene.add(sphere);
           });
         }
+
+        // もし将来、別データを読み込む際に以前のオブジェクトを破棄したい場合の例:
+        // function clearScene() {
+        //   for (let i = scene.children.length - 1; i >= 0; i--) {
+        //     const obj = scene.children[i];
+        //     if (obj.isMesh) {
+        //       obj.geometry.dispose();
+        //       if (Array.isArray(obj.material)) {
+        //         obj.material.forEach(m => m.dispose());
+        //       } else {
+        //         obj.material.dispose();
+        //       }
+        //     }
+        //     scene.remove(obj);
+        //   }
+        // }
+
       }
 
-      // メイン関数を呼び出し
+      // =====================
+      // メイン関数呼び出し
+      // =====================
       main().catch(err => {
         console.error(err);
-        alert('エラーが発生しました: ' + err.message);
+        alert("エラーが発生しました: " + err.message);
       });
     </script>
 
-    <!-- こちらはキャプション表示スクリプト（トップレベルawait関係ないのでOK） -->
+    <!-- キャプション表示用スクリプト -->
     <script>
       (function() {
-        // flag2 を取得
         const flag2 = localStorage.getItem('flag2');
-
-        // flag2 が無い・または 1・2 以外の場合は何もせず return
         if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
           return;
         }
 
-        // キャプション表示用の div を作成
         const captionDiv = document.createElement('div');
         captionDiv.style.position = 'absolute';
         captionDiv.style.top = '50px';
@@ -255,7 +296,6 @@
         captionDiv.style.fontSize = '14px';
         captionDiv.style.fontFamily = 'sans-serif';
 
-        // flag2 の値に応じたキャプション文
         let captionText = '';
         if (flag2 === '1') {
           captionText =
@@ -263,20 +303,19 @@
             'y : bill_depth_mm<br>' +
             'z : flipper_length_mm<br>' +
             'size : body_mass_g<br>' +
-            'color : species(Adelie: 赤 Chinstrap: 青 Gentoo: 黄)';
+            'color : species(Adelie: 赤, Chinstrap: 青, Gentoo: 黄)';
         } else if (flag2 === '2') {
           captionText =
             'x : GDP per capita<br>' +
             'y : Life expectancy<br>' +
             'z : Surface_area_sq_km<br>' +
             'size : Population<br>' +
-            'color : World Regions(ヨーロッパ: 青 アジア: 緑 アフリカ: 黄 アメリカ（北・南）: 赤)';
+            'color : World Regions(ヨーロッパ: 青, アジア: 緑, アフリカ: 黄, アメリカ: 赤)';
         }
 
         captionDiv.innerHTML = captionText;
         document.body.appendChild(captionDiv);
       })();
     </script>
-
   </body>
 </html>
