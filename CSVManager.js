@@ -37,8 +37,8 @@ async function loadCSVData(url) {
 // データを正規化する
 function normalizeData(data) {
   const minMax = calculateMinMax(data);
-  const flag = sessionStorage.getItem('flag'); // フラグを取得
-  const chosenDataset = sessionStorage.getItem('chosenDataset'); // データセット取得
+  const flag = localStorage.getItem('flag'); // フラグを取得
+  const chosenDataset = localStorage.getItem('chosenDataset'); // データセット取得
   return data.map((point) => {
     return {
       x: (minMax.max.x - minMax.min.x === 0)
