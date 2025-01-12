@@ -89,15 +89,15 @@
       <legend>データセット</legend>
       <label>
         <input type="radio" name="dataset" value="dataset1" checked />
-        iris（3変数）
+        penguins（3変数）
       </label><br/>
       <label>
         <input type="radio" name="dataset" value="dataset2" />
-        iris（4変数）
+        penguins（4変数）
       </label><br/>
       <label>
         <input type="radio" name="dataset" value="dataset3" />
-        iris（5変数）
+        penguins（5変数）
       </label><br/>
       <label>
         <input type="radio" name="dataset" value="dataset4" />
@@ -205,6 +205,7 @@
           sessionStorage.setItem('chosenDataset', selectedDataset);
           sessionStorage.setItem('flag', '1');
           sessionStorage.removeItem('uploadedCSVData'); 
+          handleDatasetFlags(selectedDataset);
           window.location.href = targetUrl;
 
         } else {
@@ -225,6 +226,23 @@
           }
         }
       }
+
+      // データセット選択のフラグを設定
+      function handleDatasetFlags(datasetValue) {
+        let flagValue = '0'; // デフォルトは0
+
+        // データセット1, 2, 3の場合は1に設定
+        if (datasetValue === 'dataset1' || datasetValue === 'dataset2' || datasetValue === 'dataset3') {
+          flagValue = '1';
+        } 
+        // データセット4の場合は2に設定
+        else if (datasetValue === 'dataset4') {
+          flagValue = '2';
+        }
+
+        sessionStorage.setItem('flag2', flagValue);
+      }
+
 
       function readCsvFile(file) {
         return new Promise((resolve, reject) => {
