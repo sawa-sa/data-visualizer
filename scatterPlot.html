@@ -30,7 +30,7 @@
       // 即時実行関数を使って async/await が安全に使えるようにする
       (async () => {
         // CSVを読み込む
-        const chosenDataset = sessionStorage.getItem('chosenDataset');
+        const chosenDataset = localStorage.getItem('chosenDataset');
         let csvText;
 
         if (chosenDataset === 'dataset1') {
@@ -45,7 +45,7 @@
           csvText = await loadCSVData("data/dataset5.csv");
         } else {
           // アップロードCSVのSessionStorageから読み出す
-          csvText = sessionStorage.getItem('uploadedCSVData');
+          csvText = localStorage.getItem('uploadedCSVData');
           if (!csvText) {
             alert('CSVファイルがアップロードされていません。index.html からアップロードしてください。');
             return;
@@ -210,7 +210,7 @@
 
             normalizedData.forEach((point) => {
               // flagのデフォルトを '1' に
-              const flag = sessionStorage.getItem('flag') || '1';
+              const flag = localStorage.getItem('flag') || '1';
               let size;
               if (flag === '1') {
                 // 正規化後サイズ (例：0.02 ± (point.size-0.5)*0.02)
@@ -276,7 +276,7 @@
     <script>
       (function() {
         // flag2 を取得
-        const flag2 = sessionStorage.getItem('flag2');
+        const flag2 = localStorage.getItem('flag2');
 
         // flag2 が無い・または 1・2 以外の場合は何もせず return
         if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
