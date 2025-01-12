@@ -184,17 +184,13 @@
 
     <script>
       (function() {
-        // flag2 を取得
-        const flag2 = sessionStorage.getItem('flag2');
-
-        // flag2 が無い・または 1・2 以外の場合は何もせず return
-        if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
+        const flag2 = sessionStorage.getItem('flag2') || '0';
+        if (flag2 !== '1' && flag2 !== '2') {
           return;
         }
 
-        // キャプション表示用の div を作成
         const captionDiv = document.createElement('div');
-        captionDiv.style.position = 'absolute';
+        captionDiv.style.position = 'fixed';
         captionDiv.style.top = '50px';
         captionDiv.style.right = '50px';
         captionDiv.style.padding = '10px';
@@ -203,29 +199,29 @@
         captionDiv.style.fontSize = '14px';
         captionDiv.style.fontFamily = 'sans-serif';
 
-        // flag2 の値に応じたキャプション文
-        let captionText = '';
-        if (flag2 === '1') {
-          captionText = `
-          x : bill_length_mm<br>
-          y : bill_depth_mm<br>
-          z : flipper_length_mm<br>
-          size : body_mass_g<br>
-          color : species(Adelie: 赤 Chinstrap: 青 Gentoo: 黄)
-          `;
-        } else if (flag2 === '2') {
-          captionText = `
-          x : GDP per capita<br>
-          y : Life expectancy<br>
-          z : Surface_area_sq_km<br>
-          size : Population<br>
-          color : World Regions(ヨーロッパ: 青 アジア: 緑 アフリカ: 黄 アメリカ（北・南）: 赤)<br>
-          `;
-        }
+        const captions = flag2 === '1'
+          ? [
+              "x : bill_length_mm",
+              "y : bill_depth_mm",
+              "z : flipper_length_mm",
+              "size : body_mass_g",
+              "color : species (Adelie: 赤, Chinstrap: 青, Gentoo: 黄)"
+            ]
+          : [
+              "x : GDP per capita",
+              "y : Life expectancy",
+              "z : Surface_area_sq_km",
+              "size : Population",
+              "color : World Regions (ヨーロッパ: 青, アジア: 緑, アフリカ: 黄, アメリカ: 赤)"
+            ];
 
-        // テキストを入れて body に追加
-        // captionDiv.innerHTML = captionText;
-        // document.body.appendChild(captionDiv);
+        captions.forEach(caption => {
+          const p = document.createElement('p');
+          p.textContent = caption;
+          captionDiv.appendChild(p);
+        });
+
+        document.body.appendChild(captionDiv);
       })();
     </script>
   </body>
