@@ -27,8 +27,10 @@
         loadCSVData
       } from "./CSVManager.js";
 
-      // 即時実行関数を使って async/await が安全に使えるようにする
-      (async () => {
+      // ----------------------
+      // 1) 非同期 main() 関数
+      // ----------------------
+      async function main() {
         // CSVを読み込む
         const chosenDataset = localStorage.getItem('chosenDataset');
         let csvText;
@@ -44,7 +46,7 @@
         } else if (chosenDataset === 'dataset5') {
           csvText = await loadCSVData("data/dataset5.csv");
         } else {
-          // アップロードCSVのSessionStorageから読み出す
+          // アップロードCSVを localStorage から取得
           csvText = localStorage.getItem('uploadedCSVData');
           if (!csvText) {
             alert('CSVファイルがアップロードされていません。index.html からアップロードしてください。');
@@ -52,7 +54,7 @@
           }
         }
 
-        // ここで CSV 文字列が無ければ処理終了
+        // CSV文字列が無ければ処理終了
         if (!csvText) return;
         console.log("CSV text type:", typeof csvText);
 
@@ -66,7 +68,7 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff); // 背景色を白に
+        scene.background = new THREE.Color(0xffffff); // 背景色を白
 
         const camera = new THREE.PerspectiveCamera(
           75,
@@ -89,7 +91,9 @@
         directionalLight.castShadow = true;
         scene.add(directionalLight);
 
-        // ===== 軸描画用の関数 =====
+        // ---------------------------
+        // 軸描画用の関数
+        // ---------------------------
         async function addAxesWithLabels(parsedData) {
           try {
             const { min, max } = calculateMinMax(parsedData);
@@ -100,9 +104,7 @@
               opacity: 0.5
             });
 
-            // 各軸のライン・ラベル情報
             const axes = [
-              // X軸
               {
                 start: [-0.5, 0, -0.5],
                 end: [0.5, 0, -0.5],
@@ -111,7 +113,6 @@
                 maxLabel: max.x,
                 offset: [0.1, 0, 0]
               },
-              // Y軸
               {
                 start: [-0.5, 0, -0.5],
                 end: [-0.5, 1, -0.5],
@@ -120,7 +121,6 @@
                 maxLabel: max.y,
                 offset: [0, 0.1, 0]
               },
-              // Z軸
               {
                 start: [-0.5, 0, -0.5],
                 end: [-0.5, 0, 0.5],
@@ -131,7 +131,6 @@
               }
             ];
 
-            // フォントロード
             const loader = new FontLoader();
             loader.load(
               "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
@@ -195,7 +194,7 @@
                   scene.add(maxLabelMesh);
                 });
               },
-              undefined,  // onProgress (省略可)
+              undefined,  // onProgress
               (error) => console.error("Error loading font:", error)
             );
           } catch (error) {
@@ -203,22 +202,24 @@
           }
         }
 
-        // ===== 散布図の描画関数 =====
+        // ---------------------------
+        // 散布図の描画関数
+        // ---------------------------
         function createScatterPlot(parsedData) {
           try {
             const normalizedData = normalizeData(parsedData);
 
             normalizedData.forEach((point) => {
-              // flagのデフォルトを '1' に
+              // flag のデフォルトを '1' に
               const flag = localStorage.getItem('flag') || '1';
               let size;
               if (flag === '1') {
-                // 正規化後サイズ (例：0.02 ± (point.size-0.5)*0.02)
+                // 正規化後サイズ
                 size = point.size !== undefined
                   ? 0.02 + (point.size - 0.5) * 0.02
                   : 0.02;
               } else {
-                // 4変数目を直接サイズに反映 (例：point.size が 2なら 0.04 になる)
+                // 4変数目を直接サイズに反映
                 size = point.size !== undefined
                   ? 0.02 * point.size
                   : 0.02;
@@ -232,7 +233,6 @@
               });
               const sphere = new THREE.Mesh(geometry, material);
 
-              // (x, y, z)=(0~1) のデータを -0.5 して中心に持ってくる
               sphere.position.set(point.x - 0.5, point.y, point.z - 0.5);
               scene.add(sphere);
             });
@@ -241,14 +241,15 @@
           }
         }
 
-        // ===== メイン処理 =====
+        // ---------------------------
+        // メイン処理の続き
+        // ---------------------------
         let parsedData;
         if (chosenDataset === 'custom') {
           parsedData = parseCSVData(csvText);
         } else {
-          parsedData = csvText;
+          parsedData = csvText;  // 既存ロジック通り
         }
-        
 
         // 軸を追加
         await addAxesWithLabels(parsedData);
@@ -264,21 +265,29 @@
         }
         animate();
 
-        // 画面リサイズに対応
+        // 画面リサイズ対応
         window.addEventListener("resize", () => {
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
         });
-      })();
+      }
+
+      // ----------------------
+      // 2) main() を呼び出し
+      // ----------------------
+      main().catch(err => {
+        console.error("Error in main():", err);
+        alert("エラーが発生しました: " + err.message);
+      });
     </script>
 
+    <!-- こちらはトップレベルawaitを使わない単なる即時関数 -->
     <script>
       (function() {
         // flag2 を取得
         const flag2 = localStorage.getItem('flag2');
 
-        // flag2 が無い・または 1・2 以外の場合は何もせず return
         if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
           return;
         }
@@ -294,7 +303,6 @@
         captionDiv.style.fontSize = '14px';
         captionDiv.style.fontFamily = 'sans-serif';
 
-        // flag2 の値に応じたキャプション文
         let captionText = '';
         if (flag2 === '1') {
           captionText =
@@ -312,7 +320,6 @@
             'color : World Regions(ヨーロッパ: 青 アジア: 緑 アフリカ: 黄 アメリカ（北・南）: 赤)';
         }
 
-        // テキストを入れて body に追加
         captionDiv.innerHTML = captionText;
         document.body.appendChild(captionDiv);
       })();

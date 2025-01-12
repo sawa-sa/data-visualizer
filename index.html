@@ -49,28 +49,26 @@
 
       <h2>設定内容</h2>
       <p>
-          <strong>x, y, z座標:</strong> CSVファイルの1列目、2列目、3列目のデータに対応します。<br>
-          <strong>プロットの大きさ:</strong> 4列目のデータで指定されます。<br>
-          <strong>プロットの色:</strong> 16進数のカラーコード形式に対応します。<br>
+        <strong>x, y, z座標:</strong> CSVファイルの1列目、2列目、3列目のデータに対応します。<br>
+        <strong>プロットの大きさ:</strong> 4列目のデータで指定されます。<br>
+        <strong>プロットの色:</strong> 16進数のカラーコード形式に対応します。<br>
       </p>
 
       <h2>注意点</h2>
       <p>
-          <ul>
-              <li>最低3つ以上の変数（列）が必要です。</li>
-              <li>x, y, z座標に使用するデータ（1～3列目）は、各軸で最小値が0、最大値が1になるように正規化されます。</li>
-              <li><strong>プロットの大きさ（4列目）:</strong>
-                  <ul>
-                      <li>正規化を有効にすると、値は最小値が0、最大値が1になるように変換されます。</li>
-                      <li>正規化を無効にした場合は、1を基準とした任意の正の値を受け入れ、倍率として適用します。</li>
-                  </ul>
-              </li>
-              <li><strong>プロットの色（5列目）:</strong> 正しい16進数カラーコードの形式（例: <code>0xffff00</code>、<code>#FFFF00</code>、<code>#ffff00</code>）で指定する必要があります。</li>
-          </ul>
+        <ul>
+          <li>最低3つ以上の変数（列）が必要です。</li>
+          <li>x, y, z座標に使用するデータ（1～3列目）は、各軸で最小値が0、最大値が1になるように正規化されます。</li>
+          <li><strong>プロットの大きさ（4列目）:</strong>
+            <ul>
+              <li>正規化を有効にすると、値は最小値が0、最大値が1になるように変換されます。</li>
+              <li>正規化を無効にした場合は、1を基準とした任意の正の値を受け入れ、倍率として適用します。</li>
+            </ul>
+          </li>
+          <li><strong>プロットの色（5列目）:</strong> 正しい16進数カラーコードの形式（例: <code>0xffff00</code>、<code>#FFFF00</code>、<code>#ffff00</code>）で指定する必要があります。</li>
+        </ul>
       </p>
     </div>
-    <p> </p>
-    
 
     <!-- A) どちらを使うかを選ぶラジオボタン -->
     <div>
@@ -79,7 +77,7 @@
         データセットを使用
       </label><br />
       <label>
-        <input type="radio" name="mode" value="custom" checked />
+        <input type="radio" name="mode" value="custom" />
         ファイルをアップロード
       </label>
     </div>
@@ -111,7 +109,7 @@
     </fieldset>
 
     <!-- C) ファイルアップロード + 正規化フラグ -->
-    <fieldset id="customSection">
+    <fieldset id="customSection" class="">
       <legend>カスタムファイル & フラグ</legend>
       <div style="margin-top: 10px;">
         <input type="file" id="csvFileInput" accept=".csv" />
@@ -126,7 +124,6 @@
 
     <!-- 決定ボタン（scatterPlot.htmlへ） -->
     <button id="submitBtn" style="margin-top: 10px;">決定 (scatterPlotへ)</button>
-
     <!-- 新たに追加するボタン（ar.htmlへ） -->
     <button id="arBtn" style="margin-top: 10px;">決定 (arへ)</button>
 
@@ -140,12 +137,34 @@
       const fileInput = document.getElementById('csvFileInput');
       const flagCheck = document.getElementById('flag');
       const flagStatus = document.getElementById('flagStatus');
-      
+
       const showDescriptionBtn = document.getElementById('showDescriptionBtn');
       const description = document.getElementById('description');
 
       const submitBtn = document.getElementById('submitBtn');
       const arBtn = document.getElementById('arBtn');
+
+      // ==============================================
+      // 1) ページロード時に前回のモード(selectedMode)を復元
+      // ==============================================
+      window.addEventListener('DOMContentLoaded', () => {
+        const savedMode = localStorage.getItem('selectedMode') || 'custom'; 
+        // デフォルトは 'custom' とする
+
+        if (savedMode === 'dataset') {
+          datasetSection.classList.remove('disabled');
+          customSection.classList.add('disabled');
+          modeRadios.forEach(r => {
+            if (r.value === 'dataset') r.checked = true;
+          });
+        } else {
+          datasetSection.classList.add('disabled');
+          customSection.classList.remove('disabled');
+          modeRadios.forEach(r => {
+            if (r.value === 'custom') r.checked = true;
+          });
+        }
+      });
 
       // ラジオボタンの状態変更時に表示/非表示を切り替える
       modeRadios.forEach(radio => {
@@ -160,6 +179,7 @@
         });
       });
 
+      // チェックボックス変更
       flagCheck.addEventListener('change', () => {
         if (flagCheck.checked) {
           flagStatus.textContent = "正規化が有効です (0〜1の範囲にスケーリングします)。";
@@ -170,29 +190,32 @@
 
       // 説明文を表示するボタンのクリックイベント
       showDescriptionBtn.addEventListener('click', () => {
-        description.style.display = description.style.display === 'none' ? 'block' : 'none';
+        description.style.display = (description.style.display === 'none' ? 'block' : 'none');
       });
 
       // scatterPlot.html へ移動するボタン
       submitBtn.addEventListener('click', async () => {
-        // 処理共通部分を実施してから scatterPlot.html へ遷移
         await handleDataSelection('scatterPlot.html');
       });
 
       // ar.html へ移動するボタン
       arBtn.addEventListener('click', async () => {
-        // 処理共通部分を実施してから ar.html へ遷移
         await handleDataSelection('ar.html');
       });
 
-      // 共通処理：どちらのボタンでもデータ取得 & sessionStorage に保存してから画面遷移
+      // ==============================================
+      // 2) handleDataSelectionで selectedMode を保存
+      // ==============================================
       async function handleDataSelection(targetUrl) {
-        let modeValue;
+        let modeValue = 'custom'; // デフォルト
         modeRadios.forEach(r => {
           if (r.checked) {
             modeValue = r.value;
           }
         });
+
+        // localStorageに “dataset” or “custom” として保存
+        localStorage.setItem('selectedMode', modeValue);
 
         if (modeValue === 'dataset') {
           let selectedDataset = 'dataset1';
@@ -203,11 +226,11 @@
           });
 
           localStorage.setItem('chosenDataset', selectedDataset);
-          localStorage.setItem('flag', '1');
+          localStorage.setItem('flag', '1'); // データセットは正規化扱い
           localStorage.removeItem('uploadedCSVData'); 
           handleDatasetFlags(selectedDataset);
-          window.location.href = targetUrl;
 
+          window.location.href = targetUrl;
         } else {
           localStorage.setItem('flag2', '0');
           const file = fileInput.files[0];
@@ -230,20 +253,19 @@
 
       // データセット選択のフラグを設定
       function handleDatasetFlags(datasetValue) {
-        let flagValue = '0'; // デフォルトは0
-
-        // データセット1, 2, 3の場合は1に設定
+        let flagValue = '0'; 
+        // dataset1,2,3 → flag2=1
         if (datasetValue === 'dataset1' || datasetValue === 'dataset2' || datasetValue === 'dataset3') {
           flagValue = '1';
         } 
-        // データセット4の場合は2に設定
+        // dataset4 → flag2=2
         else if (datasetValue === 'dataset4') {
           flagValue = '2';
         }
+        // dataset5 や他はお好みで追加
 
         localStorage.setItem('flag2', flagValue);
       }
-
 
       function readCsvFile(file) {
         return new Promise((resolve, reject) => {
@@ -254,6 +276,7 @@
         });
       }
 
+      // ページ読み込み時の初期メッセージ
       (function initMessage() {
         if (flagCheck.checked) {
           flagStatus.textContent = "正規化が有効です (0〜1の範囲にスケーリングします)。";
