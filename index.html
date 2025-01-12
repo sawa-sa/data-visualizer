@@ -209,6 +209,7 @@
           window.location.href = targetUrl;
 
         } else {
+          localStorage.setItem('flag2', '0');
           const file = fileInput.files[0];
           if (!file) {
             alert("CSVファイルを選択してください。");
