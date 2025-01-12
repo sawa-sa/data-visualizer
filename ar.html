@@ -207,24 +207,24 @@
         let captionText = '';
         if (flag2 === '1') {
           captionText = `
-          x:
-          y:
-          z:
-          size:
-          color:
+          x : bill_length_mm<br>
+          y : bill_depth_mm<br>
+          z : flipper_length_mm<br>
+          size : body_mass_g<br>
+          color : species(Adelie: 赤 Chinstrap: 青 Gentoo: 黄)
           `;
         } else if (flag2 === '2') {
           captionText = `
-          x:
-          y:
-          z:
-          size:
-          color:
+          x : GDP per capita<br>
+          y : Life expectancy<br>
+          z : Surface_area_sq_km<br>
+          size : Population<br>
+          color : World Regions(ヨーロッパ: 青 アジア: 緑 アフリカ: 黄 アメリカ（北・南）: 赤)<br>
           `;
         }
 
         // テキストを入れて body に追加
-        captionDiv.textContent = captionText;
+        captionDiv.innerHTML = captionText;
         document.body.appendChild(captionDiv);
       })();
     </script>
