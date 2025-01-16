@@ -254,15 +254,15 @@
       // データセット選択のフラグを設定
       function handleDatasetFlags(datasetValue) {
         let flagValue = '0'; 
-        // dataset1,2,3 → flag2=1
-        if (datasetValue === 'dataset1' || datasetValue === 'dataset2' || datasetValue === 'dataset3') {
+        if (datasetValue === 'dataset1') {
           flagValue = '1';
-        } 
-        // dataset4 → flag2=2
-        else if (datasetValue === 'dataset4') {
+        } else if (datasetValue === 'dataset2') {
           flagValue = '2';
+        } else if (datasetValue === 'dataset3') {
+          flagValue = '3';
+        } else if (datasetValue === 'dataset4') {
+          flagValue = '4';
         }
-        // dataset5 や他はお好みで追加
 
         localStorage.setItem('flag2', flagValue);
       }
