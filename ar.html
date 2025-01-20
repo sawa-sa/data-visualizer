@@ -318,7 +318,7 @@
         const flag2 = localStorage.getItem('flag2');
 
         // flag2 が無い・または 1・2 以外の場合は何もせず return
-        if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
+        if (!flag2 || !['1', '2', '3', '4'].includes(flag2)) {
           return;
         }
 
@@ -339,8 +339,7 @@
           captionText =
             'x : bill_length_mm<br>' +
             'y : bill_depth_mm<br>' +
-            'z : flipper_length_mm<br>' +
-            'size : body_mass_g<br>';
+            'z : flipper_length_mm<br>';
         } else if (flag2 === '2') {
           captionText =
             'x : bill_length_mm<br>' +
