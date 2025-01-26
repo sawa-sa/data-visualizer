@@ -54,8 +54,8 @@
         directionalLight.castShadow = true;
         scene.add(directionalLight);
 
-        // localStorage から必要な情報を取得
-        const chosenDataset = localStorage.getItem('chosenDataset');
+        // sessionStorage から必要な情報を取得
+        const chosenDataset = sessionStorage.getItem('chosenDataset');
         let csvText;
 
         // ▼ トップレベル await を避け、関数内で await
@@ -70,7 +70,7 @@
         } else if (chosenDataset === 'dataset5') {
           csvText = await loadCSVData("data/dataset5.csv");
         } else {
-          csvText = localStorage.getItem('uploadedCSVData');
+          csvText = sessionStorage.getItem('uploadedCSVData');
           if (!csvText) {
             alert('CSVデータが見つかりません。ファイルをアップロードしてもう一度試してください。');
             window.location.href = 'index.html';
@@ -233,7 +233,7 @@
         const normalizedData = normalizeData(parsedData);
 
         normalizedData.forEach(point => {
-          const flag = localStorage.getItem('flag'); // フラグの値を取得
+          const flag = sessionStorage.getItem('flag'); // フラグの値を取得
           let size;
 
           // 正規化フラグが '1' なら特殊計算、それ以外なら列をそのままサイズ化
@@ -315,10 +315,10 @@
     <script>
       (function() {
         // flag2 を取得
-        const flag2 = localStorage.getItem('flag2');
+        const flag2 = sessionStorage.getItem('flag2');
 
         // flag2 が無い・または 1・2 以外の場合は何もせず return
-        if (!flag2 || !['1', '2', '3', '4'].includes(flag2)) {
+        if (!flag2 || (flag2 !== '1' && flag2 !== '2')) {
           return;
         }
 
@@ -339,7 +339,8 @@
           captionText =
             'x : bill_length_mm<br>' +
             'y : bill_depth_mm<br>' +
-            'z : flipper_length_mm<br>';
+            'z : flipper_length_mm<br>' +
+            'size : body_mass_g<br>';
         } else if (flag2 === '2') {
           captionText =
             'x : bill_length_mm<br>' +

@@ -46,7 +46,7 @@
       // ----------------------
       async function main() {
         // CSVを読み込む
-        const chosenDataset = localStorage.getItem('chosenDataset');
+        const chosenDataset = sessionStorage.getItem('chosenDataset');
         let csvText;
 
         if (chosenDataset === 'dataset1') {
@@ -60,8 +60,8 @@
         } else if (chosenDataset === 'dataset5') {
           csvText = await loadCSVData("data/dataset5.csv");
         } else {
-          // アップロードCSVを localStorage から取得
-          csvText = localStorage.getItem('uploadedCSVData');
+          // アップロードCSVを sessionStorage から取得
+          csvText = sessionStorage.getItem('uploadedCSVData');
           if (!csvText) {
             alert('CSVファイルがアップロードされていません。index.html からアップロードしてください。');
             return;
@@ -233,7 +233,7 @@
 
             normalizedData.forEach((point) => {
               // flag のデフォルトを '1' に
-              const flag = localStorage.getItem('flag') || '1';
+              const flag = sessionStorage.getItem('flag') || '1';
               let size;
               if (flag === '1') {
                 // 正規化後サイズ
@@ -349,7 +349,7 @@
     <script>
       (function() {
         // flag2 を取得
-        const flag2 = localStorage.getItem('flag2');
+        const flag2 = sessionStorage.getItem('flag2');
 
         if (!flag2 || !['1', '2', '3', '4'].includes(flag2)) {
           return;

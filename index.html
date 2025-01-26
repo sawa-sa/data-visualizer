@@ -105,7 +105,7 @@
         <input type="radio" name="dataset" value="dataset5" />
         ランダムデータ（4変数）
       </label>
-      <p>（データセットでは4変数目が正規化されています。）</p>
+      <p>（データセット利用時は正規化やファイル選択はできません）</p>
     </fieldset>
 
     <!-- C) ファイルアップロード + 正規化フラグ -->
@@ -148,7 +148,7 @@
       // 1) ページロード時に前回のモード(selectedMode)を復元
       // ==============================================
       window.addEventListener('DOMContentLoaded', () => {
-        const savedMode = localStorage.getItem('selectedMode') || 'custom'; 
+        const savedMode = sessionStorage.getItem('selectedMode') || 'custom'; 
         // デフォルトは 'custom' とする
 
         if (savedMode === 'dataset') {
@@ -214,8 +214,8 @@
           }
         });
 
-        // localStorageに “dataset” or “custom” として保存
-        localStorage.setItem('selectedMode', modeValue);
+        // sessionStorageに “dataset” or “custom” として保存
+        sessionStorage.setItem('selectedMode', modeValue);
 
         if (modeValue === 'dataset') {
           let selectedDataset = 'dataset1';
@@ -225,25 +225,25 @@
             }
           });
 
-          localStorage.setItem('chosenDataset', selectedDataset);
-          localStorage.setItem('flag', '1'); // データセットは正規化扱い
-          localStorage.removeItem('uploadedCSVData'); 
+          sessionStorage.setItem('chosenDataset', selectedDataset);
+          sessionStorage.setItem('flag', '1'); // データセットは正規化扱い
+          sessionStorage.removeItem('uploadedCSVData'); 
           handleDatasetFlags(selectedDataset);
 
           window.location.href = targetUrl;
         } else {
-          localStorage.setItem('flag2', '0');
+          sessionStorage.setItem('flag2', '0');
           const file = fileInput.files[0];
           if (!file) {
             alert("CSVファイルを選択してください。");
             return;
           }
-          localStorage.setItem('flag', flagCheck.checked ? '1' : '0');
+          sessionStorage.setItem('flag', flagCheck.checked ? '1' : '0');
 
           try {
             const csvText = await readCsvFile(file);
-            localStorage.setItem('uploadedCSVData', csvText);
-            localStorage.setItem('chosenDataset', 'custom');
+            sessionStorage.setItem('uploadedCSVData', csvText);
+            sessionStorage.setItem('chosenDataset', 'custom');
             window.location.href = targetUrl;
           } catch (error) {
             alert("ファイル読み込みに失敗しました。");
@@ -264,7 +264,7 @@
           flagValue = '4';
         }
 
-        localStorage.setItem('flag2', flagValue);
+        sessionStorage.setItem('flag2', flagValue);
       }
 
       function readCsvFile(file) {
