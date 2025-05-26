@@ -1,50 +1,62 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>CSVファイル or データセット選択</title>
-    <style>
-      fieldset {
-        margin: 1em 0;
-        padding: 1em;
-        border: 1px solid #ccc;
-      }
-      .disabled {
-        opacity: 0.5;
-        pointer-events: none; /* クリックや変更を受け付けない */
-      }
-      .description {
-        position: fixed; /* 画面中央に固定 */
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%); /* 中央揃え */
-        padding: 1em;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        display: none; /* 初期状態では非表示 */
-        z-index: 1000;
-      }
-      .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: none; /* 初期状態では非表示 */
-        z-index: 999;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>データの選択・アップロード</h1>
 
-    <!-- 説明文を表示するボタン -->
-    <button id="showDescriptionBtn" style="margin-top: 20px;">説明を表示</button>
+<head>
+  <meta charset="utf-8" />
+  <title>CSVファイル or データセット選択</title>
+  <style>
+    fieldset {
+      margin: 1em 0;
+      padding: 1em;
+      border: 1px solid #ccc;
+    }
 
-    <!-- 説明文エリア -->
-    <div id="description" class="description">
+    .disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      /* disabled clicks */
+    }
+
+    .description {
+      position: fixed;
+      /* fixed at center */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      /* center */
+      padding: 1em;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      display: none;
+      /* hidden by default */
+      z-index: 1000;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      /* hidden by default */
+      z-index: 999;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>データの選択・アップロード</h1>
+
+  <!-- Toggle description -->
+  <button id="showDescriptionBtn" style="margin-top: 20px;">説明を表示</button>
+  <button id="showRNGExplanationBtn" style="margin-left:10px; margin-top:20px;">乱数生成の違いを表示</button>
+
+  <!-- Description area -->
+  <div id="description" class="description">
+    <button id="closeDescriptionBtn" style="float:right;">×</button>
     <p>このページでは、データセットを選択するか、CSVファイルをアップロードして、データを3D散布図として可視化できます。</p>
 
     <h2>設定内容</h2>
@@ -77,220 +89,243 @@
     </p>
   </div>
 
-    <!-- A) どちらを使うかを選ぶラジオボタン -->
-    <div>
-      <label>
-        <input type="radio" name="mode" value="dataset" />
-        データセットを使用
-      </label><br />
-      <label>
-        <input type="radio" name="mode" value="custom" />
-        ファイルをアップロード
-      </label>
+  <div id="rngExplanation" class="description">
+    <button id="closeRNGExplanationBtn" style="float:right;">×</button>
+    <h2>乱数生成器の違いについて</h2>
+
+    <p><strong>データセット5（Marsaglia-Multicarry）</strong><br>Rの <code>runif()</code> 関数において、
+      <code>RNGkind("Marsaglia-Multicarry")</code> を使って生成された乱数を使用しています。<br>
+      この方法は比較的古い「Multiply-With-Carry（乗算＋キャリー）」という仕組みに基づいており、
+      乱数の並びにわずかな規則性が出やすく、3D空間にプロットすると点が格子状に並ぶような傾向が見られます。
+    </p>
+
+    <p><strong>データセット6（Mersenne Twister）</strong><br>Rのデフォルトの乱数生成器である
+      <code>RNGkind("Mersenne-Twister")</code> を使っており、
+      現代的で非常に精度の高い「MT19937」というアルゴリズムを利用しています。<br>
+      長い周期と高いランダム性を持っており、3Dに可視化しても自然な分布となり、偏りが目立ちません。
+    </p>
+
+    <p>どちらのデータも <code>runif()</code> を使って生成されていますが、
+      <strong>裏で使われている乱数生成アルゴリズム</strong>が異なるため、見た目に大きな違いが現れます。
+    </p>
+  </div>
+
+
+  <!-- A) Choose mode -->
+  <div>
+    <label>
+      <input type="radio" name="mode" value="dataset" />
+      データセットを使用
+    </label><br />
+    <label>
+      <input type="radio" name="mode" value="custom" />
+      ファイルをアップロード
+    </label>
+  </div>
+
+  <!-- B) Dataset selection -->
+  <fieldset id="datasetSection" class="disabled">
+    <legend>データセット</legend>
+    <label>
+      <input type="radio" name="dataset" value="dataset1" checked />
+      penguins（3変数）
+    </label><br />
+    <label>
+      <input type="radio" name="dataset" value="dataset2" />
+      penguins（4変数）
+    </label><br />
+    <label>
+      <input type="radio" name="dataset" value="dataset3" />
+      penguins（5変数）
+    </label><br />
+    <label>
+      <input type="radio" name="dataset" value="dataset4" />
+      世界のデータ（5変数）
+    </label><br />
+    <label>
+      <input type="radio" name="dataset" value="dataset5" />
+      Marsaglia-Multicarry（3変数）
+    </label><br />
+    <label>
+      <input type="radio" name="dataset" value="dataset6" />
+      Mersenne Twister（3変数）
+    </label>
+    <p>（データセットでは4変数目が正規化されています。ただし、Mersenne Twisterとrunifは正規化されません）</p>
+  </fieldset>
+
+  <!-- C) File upload + normalization flag -->
+  <fieldset id="customSection" class="">
+    <legend>カスタムファイル & フラグ</legend>
+    <div style="margin-top: 10px;">
+      <input type="file" id="csvFileInput" accept=".csv" />
     </div>
 
-    <!-- B) データセット選択欄 -->
-    <fieldset id="datasetSection" class="disabled">
-      <legend>データセット</legend>
-      <label>
-        <input type="radio" name="dataset" value="dataset1" checked />
-        penguins（3変数）
-      </label><br/>
-      <label>
-        <input type="radio" name="dataset" value="dataset2" />
-        penguins（4変数）
-      </label><br/>
-      <label>
-        <input type="radio" name="dataset" value="dataset3" />
-        penguins（5変数）
-      </label><br/>
-      <label>
-        <input type="radio" name="dataset" value="dataset4" />
-        世界のデータ（5変数）
-      </label><br/>
-      <label>
-        <input type="radio" name="dataset" value="dataset5" />
-        ランダムデータ（4変数）
-      </label>
-      <p>（データセット利用時は正規化やファイル選択はできません）</p>
-    </fieldset>
+    <div style="margin-top: 10px;">
+      <input type="checkbox" id="flag" />
+      <label for="flag">4変数目を正規化して0-1の値として扱う</label>
+      <p id="flagStatus">4変数目は1をデフォルトとし、0より大きい任意の値を指定できます。</p>
+    </div>
+  </fieldset>
 
-    <!-- C) ファイルアップロード + 正規化フラグ -->
-    <fieldset id="customSection" class="">
-      <legend>カスタムファイル & フラグ</legend>
-      <div style="margin-top: 10px;">
-        <input type="file" id="csvFileInput" accept=".csv" />
-      </div>
+  <!-- Go to scatterPlot.html -->
+  <button id="submitBtn" style="margin-top: 10px;">決定 (scatterPlotへ)</button>
+  <!-- Go to ar.html -->
+  <button id="arBtn" style="margin-top: 10px;">決定 (arへ)</button>
 
-      <div style="margin-top: 10px;">
-        <input type="checkbox" id="flag" />
-        <label for="flag">4変数目を正規化して0-1の値として扱う</label>
-        <p id="flagStatus">4変数目は1をデフォルトとし、0より大きい任意の値を指定できます。</p>
-      </div>
-    </fieldset>
+  <script>
+    const modeRadios = document.getElementsByName('mode');
+    const datasetSection = document.getElementById('datasetSection');
+    const customSection = document.getElementById('customSection');
 
-    <!-- 決定ボタン（scatterPlot.htmlへ） -->
-    <button id="submitBtn" style="margin-top: 10px;">決定 (scatterPlotへ)</button>
-    <!-- 新たに追加するボタン（ar.htmlへ） -->
-    <button id="arBtn" style="margin-top: 10px;">決定 (arへ)</button>
+    const datasetRadios = document.getElementsByName('dataset');
+    const fileInput = document.getElementById('csvFileInput');
+    const flagCheck = document.getElementById('flag');
+    const flagStatus = document.getElementById('flagStatus');
 
-    <script>
-      // 要素取得
-      const modeRadios = document.getElementsByName('mode');
-      const datasetSection = document.getElementById('datasetSection');
-      const customSection = document.getElementById('customSection');
+    const showDescriptionBtn = document.getElementById('showDescriptionBtn');
+    const description = document.getElementById('description');
 
-      const datasetRadios = document.getElementsByName('dataset');
-      const fileInput = document.getElementById('csvFileInput');
-      const flagCheck = document.getElementById('flag');
-      const flagStatus = document.getElementById('flagStatus');
+    const submitBtn = document.getElementById('submitBtn');
+    const arBtn = document.getElementById('arBtn');
 
-      const showDescriptionBtn = document.getElementById('showDescriptionBtn');
-      const description = document.getElementById('description');
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedMode = localStorage.getItem('selectedMode') || 'custom';
 
-      const submitBtn = document.getElementById('submitBtn');
-      const arBtn = document.getElementById('arBtn');
+      if (savedMode === 'dataset') {
+        datasetSection.classList.remove('disabled');
+        customSection.classList.add('disabled');
+        modeRadios.forEach(r => {
+          if (r.value === 'dataset') r.checked = true;
+        });
+      } else {
+        datasetSection.classList.add('disabled');
+        customSection.classList.remove('disabled');
+        modeRadios.forEach(r => {
+          if (r.value === 'custom') r.checked = true;
+        });
+      }
+    });
 
-      // ==============================================
-      // 1) ページロード時に前回のモード(selectedMode)を復元
-      // ==============================================
-      window.addEventListener('DOMContentLoaded', () => {
-        const savedMode = sessionStorage.getItem('selectedMode') || 'custom'; 
-        // デフォルトは 'custom' とする
-
-        if (savedMode === 'dataset') {
+    // Switch sections based on radio selection
+    modeRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'dataset') {
           datasetSection.classList.remove('disabled');
           customSection.classList.add('disabled');
-          modeRadios.forEach(r => {
-            if (r.value === 'dataset') r.checked = true;
-          });
         } else {
           datasetSection.classList.add('disabled');
           customSection.classList.remove('disabled');
-          modeRadios.forEach(r => {
-            if (r.value === 'custom') r.checked = true;
-          });
+        }
+      });
+    });
+
+    // Check box change
+    flagCheck.addEventListener('change', () => {
+      if (flagCheck.checked) {
+        flagStatus.textContent = "4変数目の正規化が有効です (0〜1の範囲にスケーリングします)。";
+      } else {
+        flagStatus.textContent = "4変数目を正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
+      }
+    });
+
+    // Toggle description display
+    showDescriptionBtn.addEventListener('click', () => { description.style.display = 'block'; });
+    closeDescriptionBtn.addEventListener('click', () => { description.style.display = 'none'; });
+
+    showRNGExplanationBtn.addEventListener('click', () => { rngExplanation.style.display = 'block'; });
+    closeRNGExplanationBtn.addEventListener('click', () => { rngExplanation.style.display = 'none'; });
+
+    // Go to scatterPlot.html
+    submitBtn.addEventListener('click', async () => {
+      await handleDataSelection('scatterPlot.html');
+    });
+
+    // Go to ar.html
+    arBtn.addEventListener('click', async () => {
+      await handleDataSelection('ar.html');
+    });
+
+    async function handleDataSelection(targetUrl) {
+      let modeValue = 'custom';
+      modeRadios.forEach(r => {
+        if (r.checked) {
+          modeValue = r.value;
         }
       });
 
-      // ラジオボタンの状態変更時に表示/非表示を切り替える
-      modeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-          if (e.target.value === 'dataset') {
-            datasetSection.classList.remove('disabled');
-            customSection.classList.add('disabled');
-          } else {
-            datasetSection.classList.add('disabled');
-            customSection.classList.remove('disabled');
-          }
-        });
-      });
+      localStorage.setItem('selectedMode', modeValue);
 
-      // チェックボックス変更
-      flagCheck.addEventListener('change', () => {
-        if (flagCheck.checked) {
-          flagStatus.textContent = "4変数目の正規化が有効です (0〜1の範囲にスケーリングします)。";
-        } else {
-          flagStatus.textContent = "4変数目を正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
-        }
-      });
-
-      // 説明文を表示するボタンのクリックイベント
-      showDescriptionBtn.addEventListener('click', () => {
-        description.style.display = (description.style.display === 'none' ? 'block' : 'none');
-      });
-
-      // scatterPlot.html へ移動するボタン
-      submitBtn.addEventListener('click', async () => {
-        await handleDataSelection('scatterPlot.html');
-      });
-
-      // ar.html へ移動するボタン
-      arBtn.addEventListener('click', async () => {
-        await handleDataSelection('ar.html');
-      });
-
-      // ==============================================
-      // 2) handleDataSelectionで selectedMode を保存
-      // ==============================================
-      async function handleDataSelection(targetUrl) {
-        let modeValue = 'custom'; // デフォルト
-        modeRadios.forEach(r => {
+      if (modeValue === 'dataset') {
+        let selectedDataset = 'dataset1';
+        datasetRadios.forEach(r => {
           if (r.checked) {
-            modeValue = r.value;
+            selectedDataset = r.value;
           }
         });
 
-        // sessionStorageに “dataset” or “custom” として保存
-        sessionStorage.setItem('selectedMode', modeValue);
+        localStorage.setItem('chosenDataset', selectedDataset);
+        localStorage.setItem('flag', '1');
+        localStorage.removeItem('uploadedCSVData');
+        handleDatasetFlags(selectedDataset);
 
-        if (modeValue === 'dataset') {
-          let selectedDataset = 'dataset1';
-          datasetRadios.forEach(r => {
-            if (r.checked) {
-              selectedDataset = r.value;
-            }
-          });
+        window.location.href = targetUrl;
+      } else {
+        localStorage.setItem('flag2', '0');
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("CSVファイルを選択してください。");
+          return;
+        }
+        localStorage.setItem('flag', flagCheck.checked ? '1' : '0');
 
-          sessionStorage.setItem('chosenDataset', selectedDataset);
-          sessionStorage.setItem('flag', '1'); // データセットは正規化扱い
-          sessionStorage.removeItem('uploadedCSVData'); 
-          handleDatasetFlags(selectedDataset);
-
+        try {
+          const csvText = await readCsvFile(file);
+          localStorage.setItem('uploadedCSVData', csvText);
+          localStorage.setItem('chosenDataset', 'custom');
           window.location.href = targetUrl;
-        } else {
-          sessionStorage.setItem('flag2', '0');
-          const file = fileInput.files[0];
-          if (!file) {
-            alert("CSVファイルを選択してください。");
-            return;
-          }
-          sessionStorage.setItem('flag', flagCheck.checked ? '1' : '0');
-
-          try {
-            const csvText = await readCsvFile(file);
-            sessionStorage.setItem('uploadedCSVData', csvText);
-            sessionStorage.setItem('chosenDataset', 'custom');
-            window.location.href = targetUrl;
-          } catch (error) {
-            alert("ファイル読み込みに失敗しました。");
-          }
+        } catch (error) {
+          alert("ファイル読み込みに失敗しました。");
         }
       }
+    }
 
-      // データセット選択のフラグを設定
-      function handleDatasetFlags(datasetValue) {
-        let flagValue = '0'; 
-        if (datasetValue === 'dataset1') {
-          flagValue = '1';
-        } else if (datasetValue === 'dataset2') {
-          flagValue = '2';
-        } else if (datasetValue === 'dataset3') {
-          flagValue = '3';
-        } else if (datasetValue === 'dataset4') {
-          flagValue = '4';
-        }
+    // Set dataset flags
+    function handleDatasetFlags(datasetValue) {
+      let flagValue = '0';
+      let normalizeFlag = '1';  // 通常は正規化あり
 
-        sessionStorage.setItem('flag2', flagValue);
+      switch (datasetValue) {
+        case 'dataset1': flagValue = '1'; break;
+        case 'dataset2': flagValue = '2'; break;
+        case 'dataset3': flagValue = '3'; break;
+        case 'dataset4': flagValue = '4'; break;
+        case 'dataset5': flagValue = '5'; normalizeFlag = '0'; break;
+        case 'dataset6': flagValue = '6'; normalizeFlag = '0'; break;
       }
 
-      function readCsvFile(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.onerror = err => reject(err);
-          reader.readAsText(file);
-        });
-      }
+      localStorage.setItem('flag2', flagValue);
+      localStorage.setItem('flag', normalizeFlag);  // ← ここで正規化の有無を制御
+    }
 
-      // ページ読み込み時の初期メッセージ
-      (function initMessage() {
-        if (flagCheck.checked) {
-          flagStatus.textContent = "4変数目の正規化が有効です (0〜1の範囲にスケーリングします)。";
-        } else {
-          flagStatus.textContent = "4変数目を正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
-        }
-      })();
-    </script>
-  </body>
+
+    function readCsvFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = err => reject(err);
+        reader.readAsText(file);
+      });
+    }
+
+    // Initialize message
+    (function initMessage() {
+      if (flagCheck.checked) {
+        flagStatus.textContent = "4変数目の正規化が有効です (0〜1の範囲にスケーリングします)。";
+      } else {
+        flagStatus.textContent = "4変数目を正規化しません (1を基準の大きさとし、0より大きい任意の値を受け付けます)。";
+      }
+    })();
+  </script>
+</body>
+
 </html>
