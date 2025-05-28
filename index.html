@@ -24,6 +24,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       /* center */
+      box-sizing: border-box;
       padding: 1em;
       border: 1px solid #ccc;
       background-color: #f9f9f9;
@@ -31,6 +32,12 @@
       display: none;
       /* hidden by default */
       z-index: 1000;
+      width: 80%;
+      /* Add scrollable area */
+      max-width: 600px;
+      max-height: 80%;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .overlay {
@@ -87,6 +94,12 @@
       カメラでマーカーを認識することで、3Dプロットを表示します。<br>
       Hiroマーカーは、ARToolKitでデフォルトとして広く使用されてきたARマーカーの一種であり、サンプルやチュートリアルで頻繁に用いられる標準的なマーカーです。
     </p>
+    <figure style="margin-top:1em; text-align:center;">
+      <img src="data/hiro_marker.png" alt="Hiro Marker" style="max-width:100%; height:auto;" />
+      <figcaption style="font-size:0.9em; color:#555; margin-top:0.5em;">
+        Hiroマーカー（ARToolKit標準マーカー）
+      </figcaption>
+    </figure>
   </div>
 
   <div id="rngExplanation" class="description">
@@ -109,7 +122,6 @@
       <strong>裏で使われている乱数生成アルゴリズム</strong>が異なるため、見た目に大きな違いが現れます。
     </p>
   </div>
-
 
   <!-- A) Choose mode -->
   <div>
@@ -144,11 +156,11 @@
     </label><br />
     <label>
       <input type="radio" name="dataset" value="dataset5" />
-      Marsaglia-Multicarry（3変数）
+      疑似乱数（Marsaglia-Multicarry）（3変数）
     </label><br />
     <label>
       <input type="radio" name="dataset" value="dataset6" />
-      Mersenne Twister（3変数）
+      疑似乱数（Mersenne Twister）（3変数）
     </label>
     <p>（データセットでは4変数目が正規化されています。ただし、Mersenne Twisterとrunifは正規化されません）</p>
   </fieldset>
@@ -184,6 +196,11 @@
 
     const showDescriptionBtn = document.getElementById('showDescriptionBtn');
     const description = document.getElementById('description');
+    const closeDescriptionBtn = document.getElementById('closeDescriptionBtn');
+
+    const showRNGExplanationBtn = document.getElementById('showRNGExplanationBtn');
+    const rngExplanation = document.getElementById('rngExplanation');
+    const closeRNGExplanationBtn = document.getElementById('closeRNGExplanationBtn');
 
     const submitBtn = document.getElementById('submitBtn');
     const arBtn = document.getElementById('arBtn');
@@ -232,18 +249,15 @@
     showDescriptionBtn.addEventListener('click', () => { description.style.display = 'block'; });
     closeDescriptionBtn.addEventListener('click', () => { description.style.display = 'none'; });
 
+    // Toggle RNG explanation display
     showRNGExplanationBtn.addEventListener('click', () => { rngExplanation.style.display = 'block'; });
     closeRNGExplanationBtn.addEventListener('click', () => { rngExplanation.style.display = 'none'; });
 
     // Go to scatterPlot.html
-    submitBtn.addEventListener('click', async () => {
-      await handleDataSelection('scatterPlot.html');
-    });
+    submitBtn.addEventListener('click', async () => { await handleDataSelection('scatterPlot.html'); });
 
     // Go to ar.html
-    arBtn.addEventListener('click', async () => {
-      await handleDataSelection('ar.html');
-    });
+    arBtn.addEventListener('click', async () => { await handleDataSelection('ar.html'); });
 
     async function handleDataSelection(targetUrl) {
       let modeValue = 'custom';
@@ -306,7 +320,6 @@
       localStorage.setItem('flag2', flagValue);
       localStorage.setItem('flag', normalizeFlag);  // ← ここで正規化の有無を制御
     }
-
 
     function readCsvFile(file) {
       return new Promise((resolve, reject) => {
